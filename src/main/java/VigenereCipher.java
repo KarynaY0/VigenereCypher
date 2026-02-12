@@ -182,6 +182,82 @@ public class VigenereCipher {
 
         return result.toString();
     }
+    //ADVANCED MODE Encrypts all ASCII characters (32-126)
+    private static String encryptAdvanced(String plaintext, String key) {
+        StringBuilder result = new StringBuilder();
+        int keyIndex = 0;
 
+        for (int i = 0; i < plaintext.length(); i++) {
+            char currentChar = plaintext.charAt(i);
+            int charValue = (int) currentChar;
+
+            //Only encrypt characters within the defined ASCII range
+            if (charValue >= ASCII_START && charValue <= ASCII_END) {
+                //Get key character
+                char keyChar = key.charAt(keyIndex % key.length());
+                int keyValue = (int) keyChar;
+
+                //Normalize to 0 based position
+                int charPos = charValue - ASCII_START;
+                int keyPos = keyValue - ASCII_START;
+
+                //Encrypt using Vigenere formula
+                int encryptedPos = (charPos + keyPos) % ASCII_RANGE;
+                char encryptedChar = (char) (encryptedPos + ASCII_START);
+
+                result.append(encryptedChar);
+                keyIndex++;
+            } else {
+                //Characters outside range remain unchanged
+                result.append(currentChar);
+            }
+        }
+
+        return result.toString();
+    }
+
+    //ADVANCED MODE Decrypts all ASCII characters (32-126)
+    private static String decryptAdvanced(String ciphertext, String key) {
+        StringBuilder result = new StringBuilder();
+        int keyIndex = 0;
+
+        for (int i = 0; i < ciphertext.length(); i++) {
+            char currentChar = ciphertext.charAt(i);
+            int charValue = (int) currentChar;
+
+            // Only decrypt characters within the defined ASCII range
+            if (charValue >= ASCII_START && charValue <= ASCII_END) {
+                //Get key character
+                char keyChar = key.charAt(keyIndex % key.length());
+                int keyValue = (int) keyChar;
+
+                //Normalize to 0 based position
+                int charPos = charValue - ASCII_START;
+                int keyPos = keyValue - ASCII_START;
+
+                //Decrypt using Vigenere formula
+                int decryptedPos = (charPos - keyPos + ASCII_RANGE) % ASCII_RANGE;
+                char decryptedChar = (char) (decryptedPos + ASCII_START);
+
+                result.append(decryptedChar);
+                keyIndex++;
+            } else {
+                //characters outside range remain unchanged
+                result.append(currentChar);
+            }
+        }
+
+        return result.toString();
+    }
+
+    //Finds the position of a character in the alphabet array
+    private static int findCharPosition(char c) {
+        for (int i = 0; i < ALPHABET.length; i++) {
+            if (ALPHABET[i] == c) {
+                return i;
+            }
+        }
+        return -1;
     }
 }
+
