@@ -15,7 +15,7 @@ public class VigenereCipher {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("=== Vigenère Cipher Encryption/Decryption System ===\n");
+        System.out.println("=== Vigenere Cipher Encryption/Decryption System ===\n");
 
         // Select mode
         int mode = selectMode(scanner);
@@ -36,6 +36,152 @@ public class VigenereCipher {
             scanner.close();
             return;
         }
+        // Perform encryption
+        String encrypted;
+        if (mode == 1) {
+            encrypted = encryptBasic(plaintext, key);
+        } else {
+            encrypted = encryptAdvanced(plaintext, key);
+        }
+
+        System.out.println("\n--- Results ---");
+        System.out.println("Original text: " + plaintext);
+        System.out.println("Encryption key: " + key);
+        System.out.println("Encrypted text: " + encrypted);
+
+        // Perform decryption
+        String decrypted;
+        if (mode == 1) {
+            decrypted = decryptBasic(encrypted, key);
+        } else {
+            decrypted = decryptAdvanced(encrypted, key);
+        }
+
+        System.out.println("Decrypted text: " + decrypted);
+
+        // Verify correctness
+        if (plaintext.equals(decrypted)) {
+            System.out.println("\n✓ Decryption successful! Original and decrypted texts match.");
+        } else {
+            System.out.println("\n✗ Decryption mismatch!");
+        }
+
+        scanner.close();
+    }
+
+    //Allows user to select encryption mode
+    private static int selectMode(Scanner scanner) {
+        System.out.println("Select encryption mode:");
+        System.out.println("1. Basic mode (alphabetic characters only)");
+        System.out.println("2. Advanced mode (full ASCII range 32-126)");
+        System.out.print("Enter your choice (1 or 2): ");
+
+        int mode = 1;
+        try {
+            mode = Integer.parseInt(scanner.nextLine());
+            if (mode != 1 && mode != 2) {
+                System.out.println("Invalid choice. Using basic mode (1) by default.\n");
+                mode = 1;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Using basic mode (1) by default.\n");
+        }
+
+        System.out.println();
+        return mode;
+    }
+
+    // Validates user inputs based on the selected mode
+    private static boolean validateInputs(String plaintext, String key, int mode) {
+        if (plaintext == null || plaintext.isEmpty() || key == null || key.isEmpty()) {
+            return false;
+        }
+
+        // In basic mode key must contain only alphabetic characters
+        if (mode == 1) {
+            for (char c : key.toCharArray()) {
+                if (!Character.isLetter(c)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    //BASIC MODE, Encrypts text using Vigenere cipher alphabetic characters only
+    private static String encryptBasic(String plaintext, String key) {
+        StringBuilder result = new StringBuilder();
+        String normalizedKey = key.toUpperCase();
+        int keyIndex = 0;
+
+        for (int i = 0; i < plaintext.length(); i++) {
+            char currentChar = plaintext.charAt(i);
+
+            if (Character.isLetter(currentChar)) {
+                boolean isUpperCase = Character.isUpperCase(currentChar);
+                char normalizedChar = Character.toUpperCase(currentChar);
+
+                //Find position in alphabet
+                int charPos = findCharPosition(normalizedChar);
+                int keyPos = findCharPosition(normalizedKey.charAt(keyIndex % normalizedKey.length()));
+
+                //Encrypt using Vigenere formula
+                int encryptedPos = (charPos + keyPos) % ALPHABET.length;
+                char encryptedChar = ALPHABET[encryptedPos];
+
+                //Preserve original case
+                if (!isUpperCase) {
+                    encryptedChar = Character.toLowerCase(encryptedChar);
+                }
+
+                result.append(encryptedChar);
+                keyIndex++;
+            } else {
+                //Non alphabetic characters remain unchanged
+                result.append(currentChar);
+            }
+        }
+
+        return result.toString();
+    }
+
+    //BASIC MODE: Decrypts text using Vigenere cipher
+    private static String decryptBasic(String ciphertext, String key) {
+        StringBuilder result = new StringBuilder();
+        String normalizedKey = key.toUpperCase();
+        int keyIndex = 0;
+
+        for (int i = 0; i < ciphertext.length(); i++) {
+            char currentChar = ciphertext.charAt(i);
+
+            if (Character.isLetter(currentChar)) {
+                boolean isUpperCase = Character.isUpperCase(currentChar);
+                char normalizedChar = Character.toUpperCase(currentChar);
+
+                //Find position in alphabet
+                int charPos = findCharPosition(normalizedChar);
+                int keyPos = findCharPosition(normalizedKey.charAt(keyIndex % normalizedKey.length()));
+
+                //Decrypt using Vigenere formula
+                int decryptedPos = (charPos - keyPos + ALPHABET.length) % ALPHABET.length;
+                char decryptedChar = ALPHABET[decryptedPos];
+
+                //Preserve original case
+                if (!isUpperCase) {
+                    decryptedChar = Character.toLowerCase(decryptedChar);
+                }
+
+                result.append(decryptedChar);
+                keyIndex++;
+            } else {
+                //Non alphabetic characters remain unchanged
+                result.append(currentChar);
+            }
+        }
+
+        return result.toString();
+    }
 
     }
 }
